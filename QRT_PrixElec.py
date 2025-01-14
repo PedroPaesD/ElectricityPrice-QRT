@@ -15,6 +15,8 @@ from sklearn.preprocessing import Normalizer
 from sklearn.feature_extraction.text import CountVectorizer 
 from sklearn.pipeline import Pipeline
 
+from sklearn.decomposition import PCA
+
 ### Import data from the csv files
 
 X = pd.read_csv("ElectricityPrice-QRT/X_train.csv")
@@ -74,15 +76,30 @@ X_final[['GAS_RET','COAL_RET','CARBON_RET']] = keep
 
 ### Create model_v0
 
-#model_v0 = LinearRegression().fit(X_train, y_train)
-model_v0 = Lasso(alpha = 0.01).fit(X_train, y_train)
+### Dimensionality reduction 
 
-y_pred = model_v0.predict(X_test)
+pca = PCA(n_components=9)   
+  
+# Keep only the first six principal components 
+reg = LinearRegression() 
+pipeline = Pipeline(steps=[('pca', pca), 
+                           ('reg', reg)]) 
+  
+# Fit the pipeline to the data 
+pipeline.fit(X_train, y_train) 
+  
+# Predict the labels for the data 
+y_pred = pipeline.predict(X_test)
+
+#model_v0 = LinearRegression().fit(X_train, y_train)
+#model_v0 = Lasso(alpha = 0.01).fit(X_train, y_train)
+
+#y_pred = model_v0.predict(X_test)
 
 print('mean_squared_error : ', mean_squared_error(y_test, y_pred))
 print('mean_absolute_error : ', mean_absolute_error(y_test, y_pred))
 
-y_submit_pedro = model_v0.predict(X_final)
+""" y_submit_pedro = model_v0.predict(X_final)
 
 submission = pd.DataFrame(y_submit_pedro)
 
@@ -96,4 +113,4 @@ submission=submission.reindex(columns=columns_titles)
 #nan_cols = [i for i in X_test.columns if X_test[i].isnull().any()]
 #print(nan_cols)
 
-submission.to_csv('sublinreg.csv', encoding='utf-8', index=False)
+submission.to_csv('sublinreg.csv', encoding='utf-8', index=False) """
