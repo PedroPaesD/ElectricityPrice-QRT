@@ -1,4 +1,4 @@
-# README: Electricity Price Forecasting Challenge
+# Electricity Price Forecasting Challenge
 
 ## Overview
 
