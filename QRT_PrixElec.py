@@ -2,16 +2,16 @@ import numpy as np
 import pandas as pd
 
 from sklearn.linear_model import LinearRegression
-
 from sklearn.linear_model import Lasso, Ridge
+from sklearn.ensemble import AdaBoostRegressor
+from sklearn.tree import DecisionTreeRegressor
+
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
-
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import Normalizer
-
 from sklearn.feature_extraction.text import CountVectorizer 
 from sklearn.pipeline import Pipeline
 
@@ -47,7 +47,7 @@ X_final['COUNTRY'] = X_final['COUNTRY'].map(mappingDict)
 
 ### Cross validation and scaling
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.40, random_state=101)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=101)
 
 cols = X_train.columns
 
@@ -75,12 +75,17 @@ X_final[['GAS_RET','COAL_RET','CARBON_RET']] = keep
 ### Create model_v0
 
 #model_v0 = LinearRegression().fit(X_train, y_train)
-model_v0 = Lasso(alpha = 0.01).fit(X_train, y_train)
+#model_v0 = Lasso(alpha = 0.01).fit(X_train, y_train)
+
+model_v0 = AdaBoostRegressor(
+    DecisionTreeRegressor(max_depth=40), n_estimators=300, random_state=101
+).fit(X_train, y_train.loc[:, 'TARGET'])
 
 y_pred = model_v0.predict(X_test)
 
-print('mean_squared_error : ', mean_squared_error(y_test, y_pred))
-print('mean_absolute_error : ', mean_absolute_error(y_test, y_pred))
+print('mean_squared_error : ', mean_squared_error(y_test.to_numpy()[:,1], y_pred))
+print('mean_absolute_error : ', mean_absolute_error(y_test.to_numpy()[:,1], y_pred))
+
 
 y_submit_pedro = model_v0.predict(X_final)
 
